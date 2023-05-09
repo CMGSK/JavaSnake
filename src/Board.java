@@ -76,14 +76,27 @@ public class Board extends JPanel implements ActionListener{
 	
 	public void move () {
 		
+		//each part of the body will switch to the previous part location, starting on top position (tail)
 		for (int i=body; i>0; i--) {
-			//each part of the body will switch to the previous part location, starting on top position
 			x[i] = x[i-1]; 
 			y[i] = y[i-1];
 		}
 		
+		//we only move the head here, and the rest are supposed to follow
 		switch (direction) {
 		case 'w':
+			y[0] = y[0] - USIZE;
+			break;
+		case 's':
+			y[0] = y[0] + USIZE;
+			break;
+		case 'a':
+			x[0] = x[0] - USIZE;
+			break;
+		case 'd':
+			x[0] = x[0] + USIZE;
+			break;
+			
 			
 		}
 		
