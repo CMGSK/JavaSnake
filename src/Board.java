@@ -70,7 +70,6 @@ public class Board extends JPanel implements ActionListener{
 	public void draw(Graphics g) {
 			
 		if (running){
-  
 			//Color food then place it on XY with 1x1 usize;
 			g.setColor(Color.RED);
 			g.fillOval(foodX, foodY, UNITSIZE, UNITSIZE);
@@ -126,19 +125,23 @@ public class Board extends JPanel implements ActionListener{
 	public void popFood() {
 		sp=false;
 		boolean busy = true;
-		while(busy) {
+		int seg=0;
+		while(busy && seg<10) {
 			foodX = random.nextInt((int)WIDTH/UNITSIZE)*UNITSIZE;
 			foodY = random.nextInt((int)HEIGHT/UNITSIZE)*UNITSIZE;
 			busy = busyField(foodX, foodY);
+			seg++;
 		}
 		
 		if (random.nextInt(1000) > 90 && score!=0) { //10% chance to generate special food. Never spawning at the beginning
 			sp=true;
 			busy = true;
-			while(busy) {
+			seg=0;
+			while(busy && seg<10) {
 				spX = random.nextInt((int)WIDTH/UNITSIZE)*UNITSIZE;
 				spY = random.nextInt((int)HEIGHT/UNITSIZE)*UNITSIZE;
 				busy = busyField(spX, spY);
+				seg++;
 			}
 		}
 	}
@@ -156,10 +159,16 @@ public class Board extends JPanel implements ActionListener{
 			increase += 12;
 			body = increase == 0? body++ : body; 
 			score += 200;
-			delay = delay == 40 ? 40 : delay-20;
-			timer.stop();
-			timer = new Timer(delay,this);
-			timer.start();
+			if (delay != 40) {
+				delay-=20;
+				timer.stop();
+				timer = new Timer(delay,this);
+				timer.start();
+			}
+//			delay = delay == 40 ? 40 : delay-20;
+//			timer.stop();
+//			timer = new Timer(delay,this);
+//			timer.start();
 			popFood();
 		}
 	}
@@ -229,5 +238,4 @@ public class Board extends JPanel implements ActionListener{
 		}
 		return false;
 	}
-	
 }
