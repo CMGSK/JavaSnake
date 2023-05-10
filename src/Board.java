@@ -124,6 +124,7 @@ public class Board extends JPanel implements ActionListener{
 	}
 	
 	public void popFood() {
+		sp=false;
 		boolean busy = true;
 		while(busy) {
 			foodX = random.nextInt((int)WIDTH/UNITSIZE)*UNITSIZE;
@@ -132,6 +133,7 @@ public class Board extends JPanel implements ActionListener{
 		}
 		
 		if (random.nextInt(1000) > 90 && score!=0) { //10% chance to generate special food. Never spawning at the beginning
+			sp=true;
 			busy = true;
 			while(busy) {
 				spX = random.nextInt((int)WIDTH/UNITSIZE)*UNITSIZE;
@@ -215,8 +217,11 @@ public class Board extends JPanel implements ActionListener{
 			}
 		}
 	}
-
-	public boolean busyField(int fx, int fy) { //I did this awful thing on purpose just to piss you off. Sue me. It just checks whether the place for the food is taken by body parts
+	
+//I did this awful thing on purpose just to piss you off. Sue me. It just checks whether the place for the food is taken by body parts
+//Actually this is just a test, it generates too much overhead.
+//It would be nice to reimplement the body as an object for the whole project and specially this thing.
+	public boolean busyField(int fx, int fy) { 
 		for (int i : x) {
 			if (fx == i) {
 				for (int k : y) if (fy == k) return true;
