@@ -165,10 +165,6 @@ public class Board extends JPanel implements ActionListener{
 				timer = new Timer(delay,this);
 				timer.start();
 			}
-//			delay = delay == 40 ? 40 : delay-20;
-//			timer.stop();
-//			timer = new Timer(delay,this);
-//			timer.start();
 			popFood();
 		}
 	}
