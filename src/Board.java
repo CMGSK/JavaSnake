@@ -13,23 +13,30 @@ import javax.swing.Timer;
 public class Board extends JPanel implements ActionListener{
 
 	//screen parameters
-	static final int USIZE = 15; //Unit size
-	static final int WIDTH = USIZE*50;
-	static final int HEIGHT = USIZE*30 -1;
-	static final int UNITS = (int) ((WIDTH*HEIGHT)/(Math.pow(USIZE, 2)));
-	
-	static final int DELAY = 60; //the lower, the fastest
+	static final int UNITSIZE = 20; //Unit size
+	static final int WIDTH = 600;
+	static final int HEIGHT = 400;
+	static final int UNITS = (int) ((WIDTH*HEIGHT)/(UNITSIZE*UNITSIZE));
+
+	final Color BACKGROUND = Color.BLACK;
 	
 	final int[] x = new int[UNITS]; //x body parts
 	final int[] y = new int[UNITS]; //y body parts
+
+	int delay = 200; //the lower, the fastest
 	
 	int body = 6; //body length
-	char direction = 'd'; // W(Up)  A(Left) S(Down) D(Right)
+	int increase; // body size increase	
+	char direction = 'd'; // W(Up) A(Left) S(Down) D(Right)
 	
 	int score;
 
 	int foodX;
 	int foodY;
+	
+	boolean sp; //special food
+	int spX;
+	int spY;
 	
 	boolean running = false;
 	Timer timer;
@@ -50,7 +57,7 @@ public class Board extends JPanel implements ActionListener{
 	public void start() {
 		popFood();
 		running = true;
-		timer = new Timer(DELAY,this);
+		timer = new Timer(delay,this);
 		timer.start();
 	}
 
@@ -61,27 +68,33 @@ public class Board extends JPanel implements ActionListener{
 	}
 	
 	public void draw(Graphics g) {
-		
+			
 		if (running){
-		  //Helping grid
-			for (int i=0; i<WIDTH/USIZE; i++) {
-				g.drawLine(i*USIZE, 0, i*USIZE, HEIGHT); //draw some vertical lines
-				g.drawLine(0, i*USIZE, WIDTH, i*USIZE); //draw some horizontal lines
-			}
-		  
-		  //Color food then place it on XY with 1x1 usize;
+  
+			//Color food then place it on XY with 1x1 usize;
 			g.setColor(Color.RED);
-			g.fillOval(foodX, foodY, USIZE, USIZE);
+			g.fillOval(foodX, foodY, UNITSIZE, UNITSIZE);
+			if (sp) {
+				g.setColor(Color.CYAN);
+				g.fillOval(spX, spY, UNITSIZE, UNITSIZE);
+			}
 
-		  //Color the snake body and head
+			//Color the snake body and head
 			for (int i = 0; i<body; i++){
 				if (i==0){
 					g.setColor(Color.GREEN);
-					g.fillRect(x[i], y[i], USIZE, USIZE);
+					g.fillRect(x[i], y[i], UNITSIZE, UNITSIZE);
 				}else{
-					g.setColor(new Color(20, 180, 40));
-					g.fillRect(x[i], y[i], USIZE, USIZE);
+					g.setColor(new Color(240, 0, 140));
+					g.fillRect(x[i], y[i], UNITSIZE, UNITSIZE);
 				}
+			}
+
+			//just a grid for snake separation
+			for (int i=0; i<WIDTH/UNITSIZE; i++) {
+				g.setColor(BACKGROUND);
+				g.drawLine(i*UNITSIZE, 0, i*UNITSIZE, HEIGHT); //draw some vertical lines
+				g.drawLine(0, i*UNITSIZE, WIDTH, i*UNITSIZE); //draw some horizontal lines
 			}
 		} else gameOver(g);
 	}
@@ -96,30 +109,56 @@ public class Board extends JPanel implements ActionListener{
 		//we only move the head here, and the rest are supposed to follow
 		switch (direction) {
 			case 'w':
-				y[0] = y[0] - USIZE;
+				y[0] = y[0] - UNITSIZE;
 				break;
 			case 's':
-				y[0] = y[0] + USIZE;
+				y[0] = y[0] + UNITSIZE;
 				break;
 			case 'a':
-				x[0] = x[0] - USIZE;
+				x[0] = x[0] - UNITSIZE;
 				break;
 			case 'd':
-				x[0] = x[0] + USIZE;
+				x[0] = x[0] + UNITSIZE;
 				break;
 		}
 	}
 	
 	public void popFood() {
-		foodX = random.nextInt((int)WIDTH/USIZE)*USIZE;
-		foodY = random.nextInt((int)HEIGHT/USIZE)*USIZE;
+		boolean busy = true;
+		while(busy) {
+			foodX = random.nextInt((int)WIDTH/UNITSIZE)*UNITSIZE;
+			foodY = random.nextInt((int)HEIGHT/UNITSIZE)*UNITSIZE;
+			busy = busyField(foodX, foodY);
+		}
+		
+		if (random.nextInt(1000) > 90 && score!=0) { //10% chance to generate special food. Never spawning at the beginning
+			busy = true;
+			while(busy) {
+				spX = random.nextInt((int)WIDTH/UNITSIZE)*UNITSIZE;
+				spY = random.nextInt((int)HEIGHT/UNITSIZE)*UNITSIZE;
+				busy = busyField(spX, spY);
+			}
+		}
 	}
 	
 	public void eat() {
 		if (x[0]==foodX && y[0]==foodY){
-		  body *= 1.3;
-		  score += body * 10;
-		  popFood();
+			increase += 6;
+			body = increase == 0? body++ : body;
+			/* More than a single sum makes the body parts get stored in 0,0 because they dont have parent position. 
+			 Also cannot sum if increase is still doing its job. */			
+			score += 10;
+			popFood();
+		}
+		else if (x[0]==spX && y[0]==spY) { //special food effects. More score, new timer with lower delay with a 40 limit, and food pos reset
+			increase += 12;
+			body = increase == 0? body++ : body; 
+			score += 200;
+			delay = delay == 40 ? 40 : delay-20;
+			timer.stop();
+			timer = new Timer(delay,this);
+			timer.start();
+			popFood();
 		}
 	}
 	
@@ -129,25 +168,30 @@ public class Board extends JPanel implements ActionListener{
 		
 		//if head touches Left/Right
 		//if head touches Top/Bottom
-		if (x[0] < 0 || x[0] > WIDTH) running = false;
-		if (y[0] < 0 || y[0] > HEIGHT) running = false;
+		if (x[0] < 0 || x[0]+UNITSIZE > WIDTH) running = false;
+		if (y[0] < 0 || y[0]+UNITSIZE > HEIGHT) running = false;
 		
 		//Stop the program if there was a collision
 		if (!running) timer.stop();
 	}
 	
 	public void gameOver(Graphics g) {
-		String res = "Game over!\n\nYour Score:\n" + score;
+		g.setColor(Color.RED);
+		String res = "Game over! Your Score:" + score;
 		g.drawString(res, WIDTH/2, HEIGHT/2);
 	}
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (running){
-		  move();
-		  eat();
-		  collide();
-		}
+			if(increase != 0) { //handling body growth to avoid ghost parts spawning at 0,0
+				body++;
+				increase--;
+			}
+			move();
+			eat();
+			collide();
+		}	
 		repaint();
 	}
 
@@ -171,4 +215,14 @@ public class Board extends JPanel implements ActionListener{
 			}
 		}
 	}
+
+	public boolean busyField(int fx, int fy) { //I did this awful thing on purpose just to piss you off. Sue me. It just checks whether the place for the food is taken by body parts
+		for (int i : x) {
+			if (fx == i) {
+				for (int k : y) if (fy == k) return true;
+			}
+		}
+		return false;
+	}
+	
 }
