@@ -51,7 +51,6 @@ public class Board extends JPanel implements ActionListener{
 		this.addKeyListener(new Keys());
 		//Initialization
 		start();
-
 	}
 
 	public void start() {
@@ -77,7 +76,6 @@ public class Board extends JPanel implements ActionListener{
 				g.setColor(Color.CYAN);
 				g.fillOval(spX, spY, UNITSIZE, UNITSIZE);
 			}
-
 			//Color the snake body and head
 			for (int i = 0; i<body; i++){
 				if (i==0){
@@ -88,7 +86,6 @@ public class Board extends JPanel implements ActionListener{
 					g.fillRect(x[i], y[i], UNITSIZE, UNITSIZE);
 				}
 			}
-
 			//just a grid for snake separation
 			for (int i=0; i<WIDTH/UNITSIZE; i++) {
 				g.setColor(BACKGROUND);
@@ -126,18 +123,18 @@ public class Board extends JPanel implements ActionListener{
 		sp=false;
 		boolean busy = true;
 		int seg=0;
-		while(busy && seg<10) {
+		while(busy) {
 			foodX = random.nextInt((int)WIDTH/UNITSIZE)*UNITSIZE;
 			foodY = random.nextInt((int)HEIGHT/UNITSIZE)*UNITSIZE;
 			busy = busyField(foodX, foodY);
 			seg++;
 		}
 		
-		if (random.nextInt(1000) > 90 && score!=0) { //10% chance to generate special food. Never spawning at the beginning
+		if (random.nextInt(1000) > 95 && score!=0) { //10% chance to generate special food. Never spawning at the beginning
 			sp=true;
 			busy = true;
 			seg=0;
-			while(busy && seg<10) {
+			while(busy) {
 				spX = random.nextInt((int)WIDTH/UNITSIZE)*UNITSIZE;
 				spY = random.nextInt((int)HEIGHT/UNITSIZE)*UNITSIZE;
 				busy = busyField(spX, spY);
@@ -227,11 +224,9 @@ public class Board extends JPanel implements ActionListener{
 //Actually this is just a test, it generates too much overhead.
 //It would be nice to reimplement the body as an object for the whole project and specially this thing.
 	public boolean busyField(int fx, int fy) { 
-		for (int i : x) {
-			if (fx == i) {
-				for (int k : y) if (fy == k) return true;
-			}
-		}
+		for (int i=0; i<body; i++) 
+			if (fx == x[i] && fy == y[i])
+				return true;
 		return false;
 	}
 }
