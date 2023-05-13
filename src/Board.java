@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -7,7 +8,11 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Random;
 
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.Timer;
 
 public class Board extends JPanel implements ActionListener{
@@ -18,7 +23,7 @@ public class Board extends JPanel implements ActionListener{
 	static final int HEIGHT = 400;
 	static final int UNITS = (int) ((WIDTH*HEIGHT)/(UNITSIZE*UNITSIZE));
 
-	final Color BACKGROUND = Color.BLACK;
+	final static Color BACKGROUND = Color.BLACK;
 	
 	final int[] x = new int[UNITS]; //x body parts
 	final int[] y = new int[UNITS]; //y body parts
@@ -39,8 +44,12 @@ public class Board extends JPanel implements ActionListener{
 	int spY;
 	
 	boolean running = false;
+	boolean menu = true;
+	boolean gameover = false;
+	
 	Timer timer;
 	Random random;
+	
 	
 	Board(){
 		//Basic render config
@@ -49,6 +58,7 @@ public class Board extends JPanel implements ActionListener{
 		this.setBackground(Color.BLACK);
 		this.setFocusable(true);
 		this.addKeyListener(new Keys());
+//		this.setLayout(null);
 		//Initialization
 		start();
 	}
@@ -92,7 +102,12 @@ public class Board extends JPanel implements ActionListener{
 				g.drawLine(i*UNITSIZE, 0, i*UNITSIZE, HEIGHT); //draw some vertical lines
 				g.drawLine(0, i*UNITSIZE, WIDTH, i*UNITSIZE); //draw some horizontal lines
 			}
-		} else gameOver(g);
+		} 
+		
+//		else if (menu) callMenu(g);
+		
+		else if (gameover) gameOver(g);
+
 	}
 	
 	public void move () {
@@ -196,6 +211,9 @@ public class Board extends JPanel implements ActionListener{
 			eat();
 			collide();
 		}	
+		if (menu) {
+//			callMenu(getGraphics());
+		}
 		repaint();
 	}
 
@@ -205,28 +223,49 @@ public class Board extends JPanel implements ActionListener{
 
 			switch(e.getKeyCode()){
 				case KeyEvent.VK_W:
-				  if (direction != 's') direction = 'w';
-				  break;
+					if (direction != 's') direction = 'w';
+				  	break;
 				case KeyEvent.VK_S:
-				  if (direction != 'w') direction = 's';
-				  break;
+					if (direction != 'w') direction = 's';
+					break;
 				case KeyEvent.VK_D:
-				  if (direction != 'a') direction = 'd';
-				  break;
+					if (direction != 'a') direction = 'd';
+					break;
 				case KeyEvent.VK_A:
-				  if (direction != 'd') direction = 'a';
-				  break;
+					if (direction != 'd') direction = 'a';
+					break;
+				case KeyEvent.VK_P:
+					if (timer.isRunning()) timer.stop();
+					else timer.start();
+					break;
+				case KeyEvent.VK_M:
+					if (!menu) {
+						running=false;
+						menu=true;
+						timer.stop();
+					}else {
+						running=true;
+						menu=false	;
+						timer.start();
+					}
+					break;					
 			}
 		}
 	}
 	
-//I did this awful thing on purpose just to piss you off. Sue me. It just checks whether the place for the food is taken by body parts
-//Actually this is just a test, it generates too much overhead.
-//It would be nice to reimplement the body as an object for the whole project and specially this thing.
-	public boolean busyField(int fx, int fy) { 
-		for (int i=0; i<body; i++) 
-			if (fx == x[i] && fy == y[i])
-				return true;
+	//It would be nice to reimplement the body as an object for the whole project
+	//This generates a little overhead
+	public boolean busyField(int foodx, int foody) { 
+		//for body length check if X and index and Y at index equals to X and Y coordinates of food
+		for (int index=0; index<body; index++) {
+			if (foodx == x[index] && foody == y[index]) {
+				return true; 
+			}
+		}
 		return false;
 	}
+	
+//	public void callMenu(Graphics g) {
+//		while (menu) {};
+//	}
 }
