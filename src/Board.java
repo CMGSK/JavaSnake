@@ -1,22 +1,24 @@
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.Random;
 
-import javax.swing.BorderFactory;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
-import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 import javax.swing.Timer;
 
-public class Board extends JPanel implements ActionListener{
+public class Board extends JPanel implements ActionListener {
 
+	
 	//screen parameters
 	static final int UNITSIZE = 20; //Unit size
 	static final int WIDTH = 600;
@@ -43,21 +45,32 @@ public class Board extends JPanel implements ActionListener{
 	int spX;
 	int spY;
 	
-	boolean running = false;
-	boolean menu = true;
+	boolean running = true;
+	boolean menu = false;
 	boolean gameover = false;
 	
 	Timer timer;
 	Random random;
 	
+	BufferedImage pic;
+//	ImageIcon img = new ImageIcon("menu.png");
+//	JLabel menuLabel = new JLabel(img);
+	
+	
+	
 	
 	Board(){
+		try {
+			pic = ImageIO.read(new File("menu.png"));
+		}catch(IOException e) {	}
 		//Basic render config
 		random = new Random();
 		this.setPreferredSize(new Dimension(WIDTH,HEIGHT));
 		this.setBackground(Color.BLACK);
 		this.setFocusable(true);
 		this.addKeyListener(new Keys());
+//		menuLabel.setVisible(menu);
+//		this.add(menuLabel);
 //		this.setLayout(null);
 		//Initialization
 		start();
@@ -77,7 +90,7 @@ public class Board extends JPanel implements ActionListener{
 	}
 	
 	public void draw(Graphics g) {
-			
+		
 		if (running){
 			//Color food then place it on XY with 1x1 usize;
 			g.setColor(Color.RED);
@@ -102,9 +115,10 @@ public class Board extends JPanel implements ActionListener{
 				g.drawLine(i*UNITSIZE, 0, i*UNITSIZE, HEIGHT); //draw some vertical lines
 				g.drawLine(0, i*UNITSIZE, WIDTH, i*UNITSIZE); //draw some horizontal lines
 			}
-		} 
-		
-//		else if (menu) callMenu(g);
+		}
+		else if (menu) {
+			g.drawImage(pic, 0, 0, this);
+		}
 		
 		else if (gameover) gameOver(g);
 
@@ -211,9 +225,6 @@ public class Board extends JPanel implements ActionListener{
 			eat();
 			collide();
 		}	
-		if (menu) {
-//			callMenu(getGraphics());
-		}
 		repaint();
 	}
 
@@ -245,7 +256,7 @@ public class Board extends JPanel implements ActionListener{
 						timer.stop();
 					}else {
 						running=true;
-						menu=false	;
+						menu=false;
 						timer.start();
 					}
 					break;					
@@ -265,7 +276,4 @@ public class Board extends JPanel implements ActionListener{
 		return false;
 	}
 	
-//	public void callMenu(Graphics g) {
-//		while (menu) {};
-//	}
 }
