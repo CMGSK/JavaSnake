@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,7 +14,7 @@ import javax.swing.Timer;
 public class Board extends JPanel implements ActionListener{
 
 	//screen parameters
-	static final int UNITSIZE = 20; //Unit size
+	static final int UNITSIZE = 20; //Unit size this will impact in the snake size and places available for it within the board
 	static final int WIDTH = 600;
 	static final int HEIGHT = 400;
 	static final int UNITS = (int) ((WIDTH*HEIGHT)/(UNITSIZE*UNITSIZE));
@@ -89,8 +90,8 @@ public class Board extends JPanel implements ActionListener{
 			//just a grid for snake separation
 			for (int i=0; i<WIDTH/UNITSIZE; i++) {
 				g.setColor(BACKGROUND);
-				g.drawLine(i*UNITSIZE, 0, i*UNITSIZE, HEIGHT); //draw some vertical lines
-				g.drawLine(0, i*UNITSIZE, WIDTH, i*UNITSIZE); //draw some horizontal lines
+				g.drawLine(i*UNITSIZE, 0, i*UNITSIZE, HEIGHT); 
+				g.drawLine(0, i*UNITSIZE, WIDTH, i*UNITSIZE); 
 			}
 		} else gameOver(g);
 	}
@@ -102,7 +103,7 @@ public class Board extends JPanel implements ActionListener{
 			y[i] = y[i-1];
 		}
 		
-		//we only move the head here, and the rest are supposed to follow
+		//we only move the head here, the rest are supposed to follow
 		switch (direction) {
 			case 'w':
 				y[0] = y[0] - UNITSIZE;
@@ -130,7 +131,7 @@ public class Board extends JPanel implements ActionListener{
 			seg++;
 		}
 		
-		if (random.nextInt(1000) > 95 && score!=0) { //10% chance to generate special food. Never spawning at the beginning
+		if (random.nextInt(100) > 95 && score!=0) { //5% chance to generate special food. Never spawning at the beginning
 			sp=true;
 			busy = true;
 			seg=0;
@@ -147,8 +148,9 @@ public class Board extends JPanel implements ActionListener{
 		if (x[0]==foodX && y[0]==foodY){
 			increase += 6;
 			body = increase == 0? body++ : body;
-			/* More than a single sum makes the body parts get stored in 0,0 because they dont have parent position. 
-			 Also cannot sum if increase is still doing its job. */			
+			/* More than a single sum makes the body parts get stored in 0,0 
+			 * because they dont have parent position. 
+			 * Also cannot sum if increase is still doing its job. */			
 			score += 10;
 			popFood();
 		}
@@ -181,8 +183,13 @@ public class Board extends JPanel implements ActionListener{
 	
 	public void gameOver(Graphics g) {
 		g.setColor(Color.RED);
-		String res = "Game over! Your Score:" + score;
-		g.drawString(res, WIDTH/2, HEIGHT/2);
+		String res = "Game over!"; 
+		g.setFont(new Font("Serif", Font.BOLD, 39));
+		int len = (int) g.getFontMetrics().getStringBounds(res, g).getWidth();
+		g.drawString(res, (WIDTH/2-len/2), HEIGHT/2-20);
+		res = "Your Score:" + score;
+		len = (int) g.getFontMetrics().getStringBounds(res, g).getWidth();
+		g.drawString(res, (WIDTH/2-len/2), HEIGHT/2+20);
 	}
 	
 	@Override
@@ -220,13 +227,12 @@ public class Board extends JPanel implements ActionListener{
 		}
 	}
 	
-//I did this awful thing on purpose just to piss you off. Sue me. It just checks whether the place for the food is taken by body parts
-//Actually this is just a test, it generates too much overhead.
 //It would be nice to reimplement the body as an object for the whole project and specially this thing.
+//Returns wether a food is spawning into the snake or not
 	public boolean busyField(int fx, int fy) { 
-		for (int i=0; i<body; i++) 
-			if (fx == x[i] && fy == y[i])
-				return true;
+		for (int i=0; i<body; i++) {
+			if (fx == x[i] && fy == y[i]) return true;
+		}
 		return false;
 	}
 }
